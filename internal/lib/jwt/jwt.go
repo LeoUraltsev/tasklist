@@ -22,3 +22,16 @@ func NewToken(user models.User, duration time.Duration, secret []byte) (string, 
 
 	return tokenString, nil
 }
+
+func ValidateToken(token string, secret []byte) (jwt.MapClaims, error) {
+	t, err := jwt.ParseWithClaims(token, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return secret, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	claims := t.Claims.(jwt.MapClaims)
+
+	return claims, nil
+}

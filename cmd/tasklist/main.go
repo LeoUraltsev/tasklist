@@ -43,7 +43,7 @@ func main() {
 	service := auth.New(s, s, log, cfg)
 	log.Info("new auth service")
 
-	c := controller.NewController(service, r, log)
+	c := controller.NewController(service, r, log, cfg)
 	log.Info("new controller")
 	c.Handler()
 	log.Info("handler init")

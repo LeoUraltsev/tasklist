@@ -4,6 +4,9 @@ run_app:
 goose_create_migrations_user:
 	goose -dir migrations create user_table sql
 
+goose_create_migrations_task:
+	goose -dir migrations create task_table sql
+
 goose_up:
 	goose sqlite3 -dir migrations ./storage/tasklist.db up
 
