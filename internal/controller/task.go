@@ -7,10 +7,12 @@ import (
 	"TaskList/internal/models"
 	"context"
 	"errors"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"io"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -28,6 +30,7 @@ type Tasks interface {
 	TasksByID(
 		ctx context.Context,
 		taskID int64,
+		userID int64,
 	) (models.Task, error)
 
 	CompleteTaskByID(
@@ -151,6 +154,8 @@ func (c Controller) Tasks(w http.ResponseWriter, r *http.Request) {
 	log := c.log.With(slog.String("op", op))
 	uid := userIDFromJWTClaims(r)
 
+	log.Info("getting get tasks", slog.Int64("user_id", uid))
+
 	t, err := c.task.Tasks(context.Background(), uid)
 	if err != nil {
 		log.Error(
@@ -163,6 +168,8 @@ func (c Controller) Tasks(w http.ResponseWriter, r *http.Request) {
 			Response: response.Error("failed getting tasks"),
 		})
 	}
+
+	log.Info("success getting tasks", slog.Int64("user_id", uid))
 
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, TasksResponse{
@@ -182,6 +189,60 @@ func (c Controller) Tasks(w http.ResponseWriter, r *http.Request) {
 			}
 			return res
 		}(),
+	})
+}
+
+func (c Controller) Task(w http.ResponseWriter, r *http.Request) {
+	const op = "controller.Task"
+	uid := userIDFromJWTClaims(r)
+	log := c.log.With(slog.String("op", op), slog.Int64("uid", uid))
+
+	log.Info("getting task")
+
+	taskID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		log.Error("failed parse task id", slog.String("err", err.Error()))
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, &TasksResponse{
+			Response: response.Error("failed get id"),
+		})
+		return
+	}
+
+	log.Info("task id in path", slog.Int64("task_id", taskID))
+
+	task, err := c.task.TasksByID(context.Background(), taskID, uid)
+	if err != nil {
+		log.Error(
+			"failed get task for id",
+			slog.Int64("task_id", taskID),
+			slog.String("err", err.Error()),
+		)
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, &TasksResponse{
+			Response: response.Error("failed get task for id"),
+		})
+		return
+	}
+
+	log.Info("success getting task", slog.Int64("task_id", taskID))
+
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, TasksResponse{
+		Response: response.OK(),
+		Tasks: []Task{
+			{
+				ID:          task.ID,
+				UserID:      task.UserID,
+				Title:       task.Title,
+				Description: task.Description,
+				Status:      task.Status,
+				CreatedAt:   task.CreatedAt,
+				UpdatedAt:   task.UpdatedAt,
+			},
+		},
 	})
 }
 

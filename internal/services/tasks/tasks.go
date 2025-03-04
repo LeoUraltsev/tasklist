@@ -66,9 +66,16 @@ func (t Tasks) Tasks(ctx context.Context, userID int64) ([]models.Task, error) {
 	}, nil
 }
 
-func (t Tasks) TasksByID(ctx context.Context, taskID int64) (models.Task, error) {
-	//TODO implement me
-	panic("implement me")
+func (t Tasks) TasksByID(ctx context.Context, taskID int64, userID int64) (models.Task, error) {
+	return models.Task{
+		ID:          taskID,
+		UserID:      userID,
+		Title:       "Title 1",
+		Description: "",
+		Status:      "Done",
+		CreatedAt:   time.Now().UTC(),
+		UpdatedAt:   time.Now().UTC(),
+	}, nil
 }
 
 func (t Tasks) CompleteTaskByID(ctx context.Context, taskID int64) error {

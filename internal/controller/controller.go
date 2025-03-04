@@ -38,6 +38,7 @@ func (c Controller) Handler() {
 	c.router.Route("/api/v1/tasks", func(r chi.Router) {
 		r.Use(middlewares.AuthJWT(c.cfg.JWT.Secret))
 		r.Get("/", c.Tasks)
+		r.Get("/{id}", c.Task)
 		r.Post("/", c.CreateTask)
 	})
 }
