@@ -4,6 +4,7 @@ import (
 	"TaskList/internal/config"
 	"TaskList/internal/controller"
 	"TaskList/internal/services/auth"
+	"TaskList/internal/services/tasks"
 	"TaskList/internal/storage/sqlite"
 	"github.com/go-chi/chi/v5"
 	"log/slog"
@@ -40,10 +41,12 @@ func main() {
 	r := chi.NewRouter()
 	log.Info("init router")
 
-	service := auth.New(s, s, log, cfg)
-	log.Info("new auth service")
+	as := auth.New(s, s, log, cfg)
+	//todo: add func new()
+	ts := tasks.Tasks{}
+	log.Info("init services")
 
-	c := controller.NewController(service, r, log, cfg)
+	c := controller.NewController(as, ts, r, log, cfg)
 	log.Info("new controller")
 	c.Handler()
 	log.Info("handler init")

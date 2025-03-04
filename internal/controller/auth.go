@@ -61,7 +61,7 @@ func (c Controller) Login(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	if err := validateAuthRequest(a); err != nil {
+	if err := validateRequest(a); err != nil {
 		c.log.Warn(
 			"invalid request",
 			slog.String("op", op),
@@ -155,7 +155,7 @@ func (c Controller) Registration(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	if err := validateAuthRequest(a); err != nil {
+	if err := validateRequest(a); err != nil {
 		c.log.Warn(
 			"invalid request",
 			slog.String("op", op),
@@ -218,7 +218,7 @@ func (c Controller) Registration(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func validateAuthRequest(a interface{}) error {
+func validateRequest(a interface{}) error {
 	var errMsgs []string
 	validate := validator.New()
 	if err := validate.Struct(a); err != nil {
