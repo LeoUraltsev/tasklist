@@ -39,6 +39,7 @@ func (c Controller) Handler() {
 		r.Use(middlewares.AuthJWT(c.cfg.JWT.Secret))
 		r.Get("/", c.Tasks)
 		r.Get("/{id}", c.Task)
+		r.Patch("/{id}", c.ChangeStatusTask)
 		r.Post("/", c.CreateTask)
 	})
 }

@@ -33,20 +33,12 @@ type Tasks interface {
 		userID int64,
 	) (models.Task, error)
 
-	CompleteTaskByID(
+	ChangeTaskStatus(
 		ctx context.Context,
 		taskID int64,
+		userID int64,
+		newStatus string,
 	) error
-}
-
-type TaskRequest struct {
-	Title       string `json:"title" validate:"required"`
-	Description string `json:"description,omitempty"`
-}
-
-type CreateTaskResponse struct {
-	response.Response
-	ID int64 `json:"id,omitempty"`
 }
 
 type Task struct {
@@ -59,9 +51,27 @@ type Task struct {
 	UpdatedAt   time.Time `json:"updated"`
 }
 
+type TaskRequest struct {
+	Title       string `json:"title" validate:"required"`
+	Description string `json:"description,omitempty"`
+}
+
+type CreateTaskResponse struct {
+	response.Response
+	ID int64 `json:"id,omitempty"`
+}
+
 type TasksResponse struct {
 	response.Response
 	Tasks []Task `json:"tasks,omitempty"`
+}
+
+type ChangeStatusRequest struct {
+	Status string `json:"status"`
+}
+
+type ChangeStatusResponse struct {
+	response.Response
 }
 
 // CreateTask ...
@@ -244,6 +254,46 @@ func (c Controller) Task(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 	})
+}
+
+func (c Controller) ChangeStatusTask(w http.ResponseWriter, r *http.Request) {
+	const op = "controller.ChangeStatusTask"
+	uid := userIDFromJWTClaims(r)
+
+	log := c.log.With(slog.String("op", op), slog.Int64("user_id", uid))
+
+	log.Info("try change status")
+
+	taskID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		log.Error("failed parse task id", slog.String("err", err.Error()))
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, &TasksResponse{
+			Response: response.Error("failed get task id"),
+		})
+		return
+	}
+
+	s := &ChangeStatusRequest{}
+
+	if err := render.DecodeJSON(r.Body, s); err != nil {
+		log.Error("failed read json")
+
+		render.Status(r, http.StatusBadRequest)
+		return
+	}
+
+	if err = c.task.ChangeTaskStatus(context.Background(), taskID, uid, s.Status); err != nil {
+		log.Error("failed change status")
+
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, &ChangeStatusResponse{response.Error("failed change status")})
+		return
+	}
+
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, &ChangeStatusResponse{response.OK()})
 }
 
 func userIDFromJWTClaims(r *http.Request) int64 {

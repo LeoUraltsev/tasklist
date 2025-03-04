@@ -78,7 +78,6 @@ func (t Tasks) TasksByID(ctx context.Context, taskID int64, userID int64) (model
 	}, nil
 }
 
-func (t Tasks) CompleteTaskByID(ctx context.Context, taskID int64) error {
-	//TODO implement me
-	panic("implement me")
+func (t Tasks) ChangeTaskStatus(ctx context.Context, taskID int64, userID int64, newStatus string) error {
+	return nil
 }
