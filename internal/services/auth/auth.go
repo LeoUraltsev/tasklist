@@ -24,7 +24,7 @@ type Auth struct {
 	cfg      *config.Config
 }
 
-func New(provider Provider, saver Saver, logger *slog.Logger, cfg *config.Config) *Auth {
+func NewServices(provider Provider, saver Saver, logger *slog.Logger, cfg *config.Config) *Auth {
 	return &Auth{provider: provider, saver: saver, log: logger, cfg: cfg}
 }
 

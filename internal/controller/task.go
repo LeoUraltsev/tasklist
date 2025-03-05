@@ -42,13 +42,13 @@ type Tasks interface {
 }
 
 type Task struct {
-	ID          int64     `json:"id"`
-	UserID      int64     `json:"user_id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description,omitempty"`
-	Status      string    `json:"status"`
-	CreatedAt   time.Time `json:"created"`
-	UpdatedAt   time.Time `json:"updated"`
+	ID          int64         `json:"id"`
+	UserID      int64         `json:"user_id"`
+	Title       string        `json:"title"`
+	Description string        `json:"description,omitempty"`
+	Status      models.Status `json:"status"`
+	CreatedAt   time.Time     `json:"created"`
+	UpdatedAt   time.Time     `json:"updated"`
 }
 
 type TaskRequest struct {
@@ -177,6 +177,8 @@ func (c Controller) Tasks(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, r, &TasksResponse{
 			Response: response.Error("failed getting tasks"),
 		})
+
+		return
 	}
 
 	log.Info("success getting tasks", slog.Int64("user_id", uid))

@@ -41,9 +41,9 @@ func main() {
 	r := chi.NewRouter()
 	log.Info("init router")
 
-	as := auth.New(s, s, log, cfg)
-	//todo: add func new()
-	ts := tasks.Tasks{}
+	as := auth.NewServices(s, s, log, cfg)
+
+	ts := tasks.NewServices(s, s, s, cfg, log)
 	log.Info("init services")
 
 	c := controller.NewController(as, ts, r, log, cfg)
